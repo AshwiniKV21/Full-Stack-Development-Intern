@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DecodeLabs | Project 1 – Responsive Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CSS Variables ─── */
+    :root {
+      --mocha:   #B5947A;
+      --ethereal:#7FC5C4;
+      --moon:    #F2F0EA;
+      --dark:    #1C1C1C;
+      --mid:     #4A4A4A;
+      --light:   #FAFAF7;
+      --accent:  #3B6D11;
+      --card-bg: #FFFFFF;
+      --border:  #E0DDD6;
+      --radius:  12px;
+      --ff-head: 'Sora', sans-serif;
+      --ff-body: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--ff-body);
+      background: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* ─── SKIP LINK ─── */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--mocha);
+      color: #fff;
+      padding: 8px 16px;
+      z-index: 1000;
+      border-radius: 0 0 var(--radius) 0;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ─── HEADER ─── */
+    header {
+      background: var(--dark);
+      color: #fff;
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-family: var(--ff-head);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #fff;
+      text-decoration: none;
+    }
+    .logo span { color: var(--ethereal); }
+
+    /* ─── NAV ─── */
+    nav { display: flex; align-items: center; gap: 0.25rem; }
+    nav a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: color 0.2s, background 0.2s;
+    }
+    nav a:hover, nav a.active {
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+    }
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      color: #fff;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #fff;
+      margin: 5px 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      background: var(--dark);
+      color: #fff;
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 0%, rgba(127,197,196,0.18) 0%, transparent 65%),
+                  radial-gradient(ellipse at 10% 100%, rgba(181,148,122,0.15) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(127,197,196,0.15);
+      color: var(--ethereal);
+      border: 1px solid rgba(127,197,196,0.3);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: var(--ff-head);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      max-width: 720px;
+      margin: 0 auto 1.25rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--ethereal); }
+    .hero p {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.65);
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-family: var(--ff-body);
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); opacity: 0.92; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--mocha); color: #fff; }
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.3);
+    }
+
+    /* ─── LAYOUT ─── */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ─── SECTION TITLES ─── */
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mocha);
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      font-family: var(--ff-head);
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--dark);
+      margin-bottom: 0.75rem;
+    }
+    .section-sub { color: var(--mid); font-size: 1rem; max-width: 540px; }
+
+    /* ─── PILLARS ─── */
+    .pillars { padding: 5rem 0; }
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .pillar-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    .pillar-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.09);
+      transform: translateY(-3px);
+    }
+    .pillar-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .pillar-card.strategy::before  { background: var(--mocha); }
+    .pillar-card.design::before    { background: var(--ethereal); }
+    .pillar-card.implement::before { background: var(--accent); }
+    .pillar-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .pillar-card h3 {
+      font-family: var(--ff-head);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .pillar-card p { font-size: 0.9rem; color: var(--mid); line-height: 1.7; }
+    .pillar-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 1.25rem; }
+    .tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--moon);
+      color: var(--mid);
+    }
+
+    /* ─── ROADMAP ─── */
+    .roadmap { background: var(--dark); color: #fff; padding: 5rem 0; }
+    .roadmap .section-title { color: #fff; }
+    .roadmap .section-sub   { color: rgba(255,255,255,0.55); }
+    .roadmap .section-label { color: var(--ethereal); }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-top: 3rem;
+    }
+    .step-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.25rem;
+    }
+    .step-number {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--mocha);
+      color: #fff;
+      font-family: var(--ff-head);
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .step-card h4 {
+      font-family: var(--ff-head);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    .step-card p { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+
+    /* ─── ARTICLES ─── */
+    .articles { padding: 5rem 0; }
+    .articles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    article.card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+    article.card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      transform: translateY(-3px);
+    }
+    .card-img {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    .card-img.html-bg { background: #FFF4ED; }
+    .card-img.css-bg  { background: #EDF4FF; }
+    .card-img.js-bg   { background: #FFFBEA; }
+    .card-body { padding: 1.5rem; }
+    .card-body h3 {
+      font-family: var(--ff-head);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .card-body p { font-size: 0.875rem; color: var(--mid); line-height: 1.65; }
+
+    /* ─── TOOLKIT ─── */
+    .toolkit {
+      background: var(--moon);
+      padding: 3rem 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .toolkit-inner {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: space-between;
+    }
+    .toolkit-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--mid);
+      white-space: nowrap;
+    }
+    .toolkit-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      padding: 8px 18px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--card-bg);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    .pill.mandate {
+      background: var(--dark);
+      color: #fff;
+      border-color: var(--dark);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--dark);
+      color: rgba(255,255,255,0.5);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      font-size: 0.875rem;
+    }
+    footer a { color: var(--ethereal); text-decoration: none; }
+    footer .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      nav { display: none; }
+      nav.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 64px; left: 0; right: 0;
+        background: var(--dark);
+        padding: 1rem 1.5rem;
+        gap: 0.5rem;
+      }
+      nav.open a { padding: 10px 14px; font-size: 1rem; }
+      header { position: relative; }
+      .hamburger { display: block; }
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 3.5rem 1rem 3rem; }
+      .hero h1 { font-size: 1.75rem; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .pillars-grid, .articles-grid { grid-template-columns: 1fr; }
+      .toolkit-inner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <a href="#" class="logo">Decode<span>Labs</span></a>
+      <nav id="main-nav" role="navigation" aria-label="Main navigation">
+        <a href="#pillars" class="active">Pillars</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#toolkit">Toolkit</a>
+        <a href="#resources">Resources</a>
+      </nav>
+      <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" aria-label="Hero">
+    <div class="wrapper">
+      <p class="hero-badge">DecodeLabs Internship · Batch 2026</p>
+      <h1>You Are The <em>Architect.</em></h1>
+      <p>Project 1: Build a fully responsive frontend using semantic HTML5, CSS Grid + Flexbox, and vanilla JavaScript — no frameworks.</p>
+      <div class="hero-cta">
+        <a href="#pillars" class="btn btn-primary">Explore the Blueprint</a>
+        <a href="#roadmap" class="btn btn-outline">View Roadmap</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main id="main-content">
+
+    <!-- PILLARS -->
+    <section class="pillars" id="pillars" aria-labelledby="pillars-title">
+      <div class="wrapper">
+        <p class="section-label">Three Pillars</p>
+        <h2 class="section-title" id="pillars-title">The Framework</h2>
+        <p class="section-sub">Every great interface is built on strategy, aesthetics, and clean implementation.</p>
+        <div class="pillars-grid">
+          <div class="pillar-card strategy">
+            <div class="pillar-icon">🗺️</div>
+            <h3>Pillar 1 — Strategy &amp; Blueprint</h3>
+            <p>Research with empathy maps. Wireframe in grayscale, mobile-first. The golden rule: if it doesn't work in grayscale, color won't fix it.</p>
+            <div class="pillar-tags">
+              <span class="tag">Empathy Map</span>
+              <span class="tag">Wireframing</span>
+              <span class="tag">Lo-Fi First</span>
+            </div>
+          </div>
+          <div class="pillar-card design">
+            <div class="pillar-icon">🎨</div>
+            <h3>Pillar 2 — Visual Design 2025</h3>
+            <p>Mocha Mousse for stability, Ethereal Blue for trust, Moonlit Grey for refinement. Max 2 font families, 3 weights. Warm &amp; grounded.</p>
+            <div class="pillar-tags">
+              <span class="tag">Mocha Mousse</span>
+              <span class="tag">Ethereal Blue</span>
+              <span class="tag">Sora + DM Sans</span>
+            </div>
+          </div>
+          <div class="pillar-card implement">
+            <div class="pillar-icon">⚙️</div>
+            <h3>Pillar 3 — Implementation</h3>
+            <p>CSS Grid for macro layouts. Flexbox for micro-components. Mobile-first: start at 1 column, expand at 768px and 1024px.</p>
+            <div class="pillar-tags">
+              <span class="tag">CSS Grid</span>
+              <span class="tag">Flexbox</span>
+              <span class="tag">Mobile-First</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOOLKIT -->
+    <section class="toolkit" id="toolkit" aria-label="Toolkit">
+      <div class="wrapper">
+        <div class="toolkit-inner">
+          <span class="toolkit-label">Your Raw Materials</span>
+          <div class="toolkit-pills">
+            <span class="pill">HTML5 — Structure</span>
+            <span class="pill">CSS3 — Skin</span>
+            <span class="pill">JavaScript — Logic</span>
+            <span class="pill mandate">⚠ No Frameworks. Master the fundamentals.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section class="roadmap" id="roadmap" aria-labelledby="roadmap-title">
+      <div class="wrapper">
+        <p class="section-label">Execution Roadmap</p>
+        <h2 class="section-title" id="roadmap-title">6 Steps to Ship</h2>
+        <p class="section-sub">Follow this process exactly — each step unlocks the next.</p>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <h4>Discovery</h4>
+            <p>Define "How might we…" — research the user problem.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <h4>Wireframe</h4>
+            <p>Sketch grayscale, mobile-first hierarchy and flow.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <h4>Semantics</h4>
+            <p>Write landmark HTML: header, nav, main, article, footer.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">4</div>
+            <h4>Style</h4>
+            <p>Apply CSS Grid + Flexbox with the 2025 palette.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">5</div>
+            <h4>Logic</h4>
+            <p>Add JS state and basic interactivity (menu, tabs, etc.)</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">6</div>
+            <h4>Audit</h4>
+            <p>Check LCP/CLS metrics and WCAG accessibility score.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESOURCES -->
+    <section class="articles" id="resources" aria-labelledby="resources-title">
+      <div class="wrapper">
+        <p class="section-label">The Toolkit In Depth</p>
+        <h2 class="section-title" id="resources-title">Core Technologies</h2>
+        <p class="section-sub">Three tools. No shortcuts. Master each completely before moving on.</p>
+        <div class="articles-grid">
+          <article class="card">
+            <div class="card-img html-bg">🏗️</div>
+            <div class="card-body">
+              <h3>HTML5 — The Infrastructure</h3>
+              <p>Semantic landmarks and structural meaning. Not just divs — the right element for the right job. Provides a Table of Contents for screen readers and AI parsers.</p>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-img css-bg">🎨</div>
+            <div class="card-body">
+              <h3>CSS3 — The Skin</h3>
+              <p>Responsive styling using Grid (macro, full-page), Flexbox (micro-components), and Container Queries for truly adaptive design.</p>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-img js-bg">⚡</div>
+            <div class="card-body">
+              <h3>JavaScript — The Logic</h3>
+              <p>Basic state management and interactive functionality. Nav toggles, tab panels, form validation — all without a framework.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <p>DecodeLabs · Project 1: Go Build. · Batch 2026</p>
+      <p>
+        <a href="mailto:decodelabs.tech@gmail.com">decodelabs.tech@gmail.com</a>
+        &nbsp;·&nbsp;
+        <a href="https://www.decodelabs.tech" target="_blank" rel="noopener">www.decodelabs.tech</a>
+        &nbsp;·&nbsp; Greater Lucknow, India
+      </p>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    const hamburger = document.getElementById('hamburger-btn');
+    const nav = document.getElementById('main-nav');
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', isOpen);
+      const spans = hamburger.querySelectorAll('span');
+      if (isOpen) {
+        spans[0].style.transform = 'translateY(7px) rotate(45deg)';
+        spans[1].style.opacity = '0';
+        spans[2].style.transform = 'translateY(-7px) rotate(-45deg)';
+      } else {
+        spans[0].style.transform = '';
+        spans[1].style.opacity = '';
+        spans[2].style.transform = '';
+      }
+          });
+
+    nav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        const spans = hamburger.querySelectorAll('span');
+        spans[0].style.transform = '';
+        spans[1].style.opacity = '';
+        spans[2].style.transform = '';
+      });
+    });
+
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = nav.querySelectorAll('a');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => link.classList.remove('active'));
+          const active = nav.querySelector(a[href="#${entry.target.id}"]);
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { threshold: 0.5 });
+
+    sections.forEach(sec => observer.observe(sec));
+  </script>
+
+</body>
+</html>
+
