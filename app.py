@@ -1,186 +1,105 @@
-import sqlite3
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+import sqlite3
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
+CORS(app)  # Fix the CORS barrier
+
 DB = "database.db"
-
-# ─── Setup Database ───────────────────────────────────────
-def init_db():
-    conn = sqlite3.connect(DB)
-    cursor = conn.cursor()
-
-    cursor.executescript("""
-        CREATE TABLE IF NOT EXISTS users (
-            UserID   INTEGER PRIMARY KEY AUTOINCREMENT,
-            Name     TEXT    NOT NULL,
-            Email    TEXT    NOT NULL UNIQUE,
-            Age      INTEGER CHECK (Age >= 18)
-        );
-
-        CREATE TABLE IF NOT EXISTS orders (
-            OrderID  INTEGER PRIMARY KEY AUTOINCREMENT,
-            Total    REAL    NOT NULL,
-            UserID   INTEGER NOT NULL,
-            FOREIGN KEY (UserID) REFERENCES users(UserID)
-        );
-    """)
-
-    conn.commit()
-    conn.close()
 
 def get_db():
     conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row  # returns dict-like rows
+    conn.row_factory = sqlite3.Row
     return conn
 
-
-
-# ─── USERS CRUD ───────────────────────────────────────────
-
-# CREATE - POST /users
-@app.route("/users", methods=["POST"])
-def create_user():
-    data = request.get_json()
-
-    # Syntactic validation
-    if not data or "name" not in data or "email" not in data:
-        return jsonify({"error": "Bad Request - name and email required"}), 400
-
-    # Semantic validation
-    if not isinstance(data["name"], str) or not isinstance(data["email"], str):
-        return jsonify({"error": "Bad Request - invalid data types"}), 400
-
-    try:
-        conn = get_db()
-        # Parameterized query - prevents SQL injection
-        conn.execute(
-            "INSERT INTO users (Name, Email) VALUES (?, ?)",
-            (data["name"], data["email"])
+def init_db():
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS interns (
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            name    TEXT    NOT NULL,
+            role    TEXT    NOT NULL,
+            contact TEXT    NOT NULL UNIQUE
         )
-        conn.commit()
-        conn.close()
-        return jsonify({"message": "User created"}), 201
-
-    except sqlite3.IntegrityError:
-        return jsonify({"error": "Email already exists"}), 400
-
-
-# READ - GET /users
-@app.route("/users", methods=["GET"])
-def get_users():
-    conn = get_db()
-    users = conn.execute("SELECT * FROM users").fetchall()
-    conn.close()
-    return jsonify([dict(u) for u in users]), 200
-
-
-# READ - GET /users/<id>
-@app.route("/users/<int:user_id>", methods=["GET"])
-def get_user(user_id):
-    conn = get_db()
-    user = conn.execute(
-        "SELECT * FROM users WHERE UserID = ?", (user_id,)
-    ).fetchone()
-    conn.close()
-
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    return jsonify(dict(user)), 200
-
-
-# READ - GET /users/<id>/posts (orders)
-@app.route("/users/<int:user_id>/orders", methods=["GET"])
-def get_user_orders(user_id):
-    conn = get_db()
-    orders = conn.execute(
-        "SELECT * FROM orders WHERE UserID = ?", (user_id,)
-    ).fetchall()
-    conn.close()
-    return jsonify([dict(o) for o in orders]), 200
-
-
-# UPDATE - PUT /users/<id>
-@app.route("/users/<int:user_id>", methods=["PUT"])
-def update_user(user_id):
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Bad Request - no data"}), 400
-
-    conn = get_db()
-    user = conn.execute(
-        "SELECT * FROM users WHERE UserID = ?", (user_id,)
-    ).fetchone()
-
-    if not user:
-        conn.close()
-        return jsonify({"error": "User not found"}), 404
-
-    name  = data.get("name",  user["Name"])
-    email = data.get("email", user["Email"])
-
-    try:
-        conn.execute(
-            "UPDATE users SET Name = ?, Email = ? WHERE UserID = ?",
-            (name, email, user_id)
-        )
-        conn.commit()
-        conn.close()
-        return jsonify({"message": "User updated"}), 200
-    except sqlite3.IntegrityError:
-        return jsonify({"error": "Email already exists"}), 400
-
-
-# DELETE - DELETE /users/<id>
-@app.route("/users/<int:user_id>", methods=["DELETE"])
-def delete_user(user_id):
-    conn = get_db()
-    user = conn.execute(
-        "SELECT * FROM users WHERE UserID = ?", (user_id,)
-    ).fetchone()
-
-    if not user:
-        conn.close()
-        return jsonify({"error": "User not found"}), 404
-
-    conn.execute("DELETE FROM users WHERE UserID = ?", (user_id,))
+    """)
     conn.commit()
     conn.close()
-    return jsonify({"message": "User deleted"}), 204
 
+@app.route("/")
+def home():
+    return render_template("index.html")
 
-# ─── ORDERS CRUD ──────────────────────────────────────────
+# GET /api/interns
+@app.route("/api/interns", methods=["GET"])
+def get_interns():
+    conn = get_db()
+    interns = conn.execute("SELECT * FROM interns").fetchall()
+    conn.close()
+    return jsonify([dict(i) for i in interns]), 200
 
-# CREATE - POST /orders
-@app.route("/orders", methods=["POST"])
-def create_order():
+# POST /api/interns
+@app.route("/api/interns", methods=["POST"])
+def create_intern():
     data = request.get_json()
 
-    if not data or "total" not in data or "user_id" not in data:
-        return jsonify({"error": "Bad Request - total and user_id required"}), 400
+    if not data or "name" not in data or "role" not in data or "contact" not in data:
+        return jsonify({"error": "Bad Request - name, role, contact required"}), 400
 
     try:
         conn = get_db()
         conn.execute(
-            "INSERT INTO orders (Total, UserID) VALUES (?, ?)",
-            (data["total"], data["user_id"])
+            "INSERT INTO interns (name, role, contact) VALUES (?, ?, ?)",
+            (data["name"], data["role"], data["contact"])
         )
         conn.commit()
         conn.close()
-        return jsonify({"message": "Order created"}), 201
+        return jsonify({"message": "Intern created"}), 201
     except sqlite3.IntegrityError:
-        return jsonify({"error": "Invalid UserID - user does not exist"}), 400
+        return jsonify({"error": "Contact already exists"}), 400
 
-
-# READ - GET /orders
-@app.route("/orders", methods=["GET"])
-def get_orders():
+# PUT /api/interns/<id>
+@app.route("/api/interns/<int:intern_id>", methods=["PUT"])
+def update_intern(intern_id):
+    data = request.get_json()
     conn = get_db()
-    orders = conn.execute("SELECT * FROM orders").fetchall()
+    intern = conn.execute(
+        "SELECT * FROM interns WHERE id = ?", (intern_id,)
+    ).fetchone()
+
+    if not intern:
+        conn.close()
+        return jsonify({"error": "Intern not found"}), 404
+
+    name    = data.get("name",    intern["name"])
+    role    = data.get("role",    intern["role"])
+    contact = data.get("contact", intern["contact"])
+
+    conn.execute(
+        "UPDATE interns SET name=?, role=?, contact=? WHERE id=?",
+        (name, role, contact, intern_id)
+    )
+    conn.commit()
     conn.close()
-    return jsonify([dict(o) for o in orders]), 200
+    return jsonify({"message": "Intern updated"}), 200
 
+# DELETE /api/interns/<id>
+@app.route("/api/interns/<int:intern_id>", methods=["DELETE"])
+def delete_intern(intern_id):
+    conn = get_db()
+    intern = conn.execute(
+        "SELECT * FROM interns WHERE id = ?", (intern_id,)
+    ).fetchone()
 
-# ─── Run ──────────────────────────────────────────────────
+    if not intern:
+        conn.close()
+        return jsonify({"error": "Intern not found"}), 404
+
+    conn.execute("DELETE FROM interns WHERE id = ?", (intern_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Intern deleted"}), 200
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)

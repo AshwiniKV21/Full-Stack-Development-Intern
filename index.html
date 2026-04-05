@@ -1,0 +1,276 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DecodeLabs - Intern Manager</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #333;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    .container { max-width: 800px; margin: 0 auto; }
+
+    /* Form */
+    .form-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 30px;
+    }
+
+    .form-card h2 { margin-bottom: 16px; color: #2c3e50; }
+
+    .form-card input {
+      width: 100%;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .form-card button {
+      width: 100%;
+      padding: 12px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .form-card button:hover { background: #2980b9; }
+
+    /* Status message */
+    #status {
+      text-align: center;
+      margin-bottom: 16px;
+      font-weight: 500;
+      min-height: 20px;
+      color: #27ae60;
+    }
+
+    #status.error { color: #e74c3c; }
+
+    /* Loading spinner */
+    #loading {
+      text-align: center;
+      color: #888;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    /* Intern list */
+    #intern-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .intern-card {
+      background: white;
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .intern-info h3 { font-size: 16px; color: #2c3e50; }
+    .intern-info p  { font-size: 13px; color: #888; margin-top: 2px; }
+
+    .intern-actions { display: flex; gap: 8px; }
+
+    .btn-delete {
+      padding: 7px 14px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn-delete:hover { background: #c0392b; }
+
+    .empty {
+      text-align: center;
+      color: #aaa;
+      padding: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🚀 DecodeLabs Intern Manager</h1>
+
+  <!-- Add Intern Form -->
+  <div class="form-card">
+    <h2>Add New Intern</h2>
+    <input type="text"  id="inp-name"    placeholder="Full Name" />
+    <input type="text"  id="inp-role"    placeholder="Role (e.g. Frontend Dev)" />
+    <input type="text"  id="inp-contact" placeholder="Contact / Email" />
+    <button onclick="createIntern()">Add Intern</button>
+  </div>
+
+  <!-- Status -->
+  <div id="status"></div>
+  <div id="loading">Loading...</div>
+
+  <!-- Intern List -->
+  <div id="intern-list"></div>
+</div>
+
+<script>
+  const API = "http://127.0.0.1:5000/api";
+
+  // ── Helpers ──────────────────────────────────────────────
+  function showStatus(msg, isError = false) {
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    el.className = isError ? "error" : "";
+    setTimeout(() => el.textContent = "", 3000);
+  }
+
+  function setLoading(state) {
+    document.getElementById("loading").style.display = state ? "block" : "none";
+  }
+
+  // ── READ: Load all interns ────────────────────────────────
+  async function loadInterns() {
+    setLoading(true);
+    try {
+      const response = await fetch(${API}/interns);
+
+      // Check HTTP status before parsing JSON
+      if (!response.ok) {
+        throw new Error(Server error: ${response.status});
+      }
+
+      const data = await response.json();  // Deserialization
+      renderInterns(data);
+
+    } catch (error) {
+      showStatus("Failed to load interns. Is the server running?", true);
+      console.error(error);
+    } finally {
+      setLoading(false);  // Always runs
+    }
+  }
+
+  // ── Render interns into DOM ───────────────────────────────
+  function renderInterns(interns) {
+    const container = document.getElementById("intern-list");
+
+    if (interns.length === 0) {
+      container.innerHTML = '<p class="empty">No interns yet. Add one above!</p>';
+      return;
+    }
+
+    // Use textContent (not innerHTML) to prevent XSS
+    container.innerHTML = "";
+    interns.forEach(intern => {
+      const card = document.createElement("div");
+      card.className = "intern-card";
+
+      const info = document.createElement("div");
+      info.className = "intern-info";
+
+      const name = document.createElement("h3");
+      name.textContent = intern.name;   // Safe - no XSS
+
+      const detail = document.createElement("p");
+      detail.textContent = ${intern.role} • ${intern.contact};
+
+      info.appendChild(name);
+      info.appendChild(detail);
+
+      const actions = document.createElement("div");
+      actions.className = "intern-actions";
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn-delete";
+      delBtn.textContent = "Delete";
+      delBtn.onclick = () => deleteIntern(intern.id);
+
+      actions.appendChild(delBtn);
+      card.appendChild(info);
+      card.appendChild(actions);
+      container.appendChild(card);
+    });
+  }
+
+  // ── CREATE: Add new intern ────────────────────────────────
+  async function createIntern() {
+    const name    = document.getElementById("inp-name").value.trim();
+    const role    = document.getElementById("inp-role").value.trim();
+    const contact = document.getElementById("inp-contact").value.trim();
+
+    if (!name || !role || !contact) {
+      showStatus("All fields are required.", true);
+      return;
+    }
+
+    try {
+      const response = await fetch(${API}/interns, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, role, contact })  // Serialization
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Failed to create intern");
+      }
+
+      // Clear inputs
+      document.getElementById("inp-name").value    = "";
+      document.getElementById("inp-role").value    = "";
+      document.getElementById("inp-contact").value = "";
+
+      showStatus("Intern added successfully!");
+      loadInterns();  // Refresh list
+
+    } catch (error) {
+      showStatus(error.message, true);
+    }
+  }
+
+  // ── DELETE: Remove intern ─────────────────────────────────
+  async function deleteIntern(id) {
+    try {
+      const response = await fetch(${API}/interns/${id}, {
+        method: "DELETE"
+      });
+
+      if (!response.ok) {
+        throw new Error(Delete failed: ${response.status});
+      }
+
+      showStatus("Intern deleted.");
+      loadInterns();  // Refresh list
+
+    } catch (error) {
+      showStatus(error.message, true);
+    }
+  }
+
+  // ── Init ─────────────────────────────────────────────────
+  loadInterns();
+</script>
+
+</body>
+</html>
