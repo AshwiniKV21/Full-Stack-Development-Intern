@@ -1,0 +1,82 @@
+Intern Manager Web Application(DecodeLabs Project 4)
+
+Project Description
+
+This is a full stack web application developed using Flask, SQLite, HTML, CSS, and JavaScript.
+The application allows users to manage intern details with basic CRUD operations (Create, Read, Delete).
+
+---
+
+✨ Features
+
+- ➕ Add new interns
+- 📋 View all interns
+- ❌ Delete interns
+- 💾 Data stored in SQLite database
+- 🔗 Frontend connected with Flask backend API
+
+---
+
+Technologies Used
+
+- Python (Flask)
+- SQLite Database
+- HTML, CSS, JavaScript
+- Flask-CORS
+
+---
+
+📁 Project Structure
+
+project/
+│── app.py
+│── database.db
+│── templates/
+│     └── index.html
+
+---
+
+How to Run the Project
+
+1️⃣ Install dependencies
+
+pip install flask flask-cors
+
+2️⃣ Run the Flask server
+
+python app.py
+
+3️⃣ Open in browser
+
+http://127.0.0.1:5000/
+
+---
+
+ API Endpoints
+
+- GET /api/interns → Get all interns
+- POST /api/interns → Add new intern
+- DELETE /api/interns/<id> → Delete intern
+
+---
+
+ Output
+
+- User can add intern details (name, role, contact)
+- Data will be stored in database
+- Intern list will be displayed on screen
+
+---
+
+ Author
+
+Ashwini KV
+
+---
+
+ Future Improvements
+
+-  Edit/Update intern details
+-  Search functionality
+-  Improve UI design
+- 🌐 Deploy online
